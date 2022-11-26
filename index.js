@@ -39,6 +39,7 @@ async function run() {
     const userCollection = client.db("doctors_portal").collection("users");
     const doctorCollection = client.db("doctors_portal").collection("doctors");
     const paymentCollection = client.db("doctors_portal").collection("payments");
+    const reviewCollection = client.db("doctors_portal").collection("reviews");
 
     //token
     const verifyAdmin = async (req, res, next) => {
@@ -64,6 +65,19 @@ async function run() {
       });
       res.send({clientSecret: paymentIntent.client_secret,})
       });
+
+      //post review
+      app.post("/review", async (req, res) => {
+        const review = req.body;
+        const result = await reviewCollection.insertOne(review);
+        res.send(result);
+      });
+
+      //get reviews
+      app.get('/review', async (req, res) => {
+        const reviews = await reviewCollection.find().toArray();
+        res.send(reviews);
+      })
 
       app.get('/booking', verifyJWT, async (req, res) => {
         const patient = req.query.patient;
@@ -189,7 +203,7 @@ async function run() {
 
 
       //get doctors
-      app.get('/doctor', verifyJWT, verifyAdmin, async (req, res) => {
+      app.get('/doctor', async (req, res) => {
         const doctors = await doctorCollection.find().toArray();
         res.send(doctors);
       })
